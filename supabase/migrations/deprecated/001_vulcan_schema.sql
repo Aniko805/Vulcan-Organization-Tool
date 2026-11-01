@@ -2,7 +2,7 @@
 -- Run in Supabase SQL Editor (or via CLI). Safe to re-run with IF NOT EXISTS patterns where noted.
 
 create extension if not exists pgcrypto;
-
+-- n
 -- ---------------------------------------------------------------------------
 -- Profiles (extend if missing)
 -- ---------------------------------------------------------------------------
