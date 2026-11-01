@@ -55,6 +55,7 @@ export default function Sidebar() {
     { label: "Parts", href: "/parts" },
     { label: "Part Identifier", href: "/parts/identify" },
     { label: "Engineering Notes", href: "/engineering-notes" },
+    { label: "Notebook", href: "/notebook" },
     { label: "Settings", href: "/settings" },
     
   ];
