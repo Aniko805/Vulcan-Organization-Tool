@@ -199,6 +199,18 @@ export async function updatePartQuantity(
   if (error) throw new Error(error.message);
 }
 
+export async function updatePartDescription(
+  partId: string,
+  description: string
+): Promise<void> {
+  const { error } = await supabase.rpc("update_part_description", {
+    p_part_id: partId,
+    p_description: description,
+  });
+
+  if (error) throw new Error(error.message);
+}
+
 export async function updatePartStatus(
   partStatusId: string,
   statusId: string
