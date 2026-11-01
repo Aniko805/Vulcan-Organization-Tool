@@ -11,11 +11,18 @@ import AppShell, {
 } from "@/app/components/AppShell";
 import CatalogPicker from "@/app/components/CatalogPicker";
 import {
+  CARD_INTERACTIVE,
+  H_SCROLL,
+  INPUT,
+  SCROLLBAR,
+} from "@/app/components/ui";
+import {
   addPartToInventory,
   deletePart,
   deletePartStatusListing,
   listPartStatuses,
   listParts,
+  updatePartDescription,
   updatePartQuantity,
   updatePartStatus,
 } from "@/lib/parts";
@@ -35,6 +42,9 @@ import {
 } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const QTY_STEP =
+  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-zinc-800/60 hover:bg-zinc-700/60 border border-white/10 text-sm font-bold text-zinc-200 transition-all active:scale-95";
+
 export default function PartsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -45,6 +55,9 @@ export default function PartsPage() {
   const [selectedCatalog, setSelectedCatalog] = useState<PartCatalog | null>(null);
   const [selectedStatusId, setSelectedStatusId] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerEpoch, setDrawerEpoch] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -154,6 +167,41 @@ export default function PartsPage() {
             statusRecord?.status_list?.name === filter
         );
 
+  // The drawer keeps showing the last selected part while it slides out, so
+  // content only disappears once the part is gone from the list.
+  const activeListing = (() => {
+    if (!selectedKey) return null;
+    const match = listings.find(
+      ({ part, statusRecord }) =>
+        `${part.id}-${statusRecord?.id ?? "no-status"}` === selectedKey
+    );
+    if (!match) return null;
+    const status =
+      statuses.find((item) => item.id === match.statusRecord?.status_id) ??
+      match.statusRecord?.status_list;
+    return {
+      key: selectedKey,
+      part: match.part,
+      statusName: status?.name ?? "Unknown",
+      quantity: match.statusRecord?.quantity ?? 1,
+    };
+  })();
+  const drawerShown = drawerOpen && activeListing !== null;
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    setDrawerEpoch((current) => current + 1);
+  }, []);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDrawer();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [drawerOpen, closeDrawer]);
+
   const handleCreate = async () => {
     if (!userId || !teamId || !hasValidCatalogSelection || !selectedStatusId) return;
     setBusy(true);
@@ -195,6 +243,8 @@ export default function PartsPage() {
             const nextTeamId = e.target.value || null;
             refreshGeneration.current += 1;
             setFilter("all");
+            setSelectedKey(null);
+            setDrawerOpen(false);
             setParts([]);
             setMembers([]);
             setStatuses([]);
@@ -297,7 +347,7 @@ export default function PartsPage() {
             </Panel>
           )}
 
-          <div className="flex flex-wrap gap-2">
+          <div className={`flex gap-2 px-4 ${H_SCROLL}`}>
             <FilterChip
               active={filter === "all"}
               onClick={() => setFilter("all")}
@@ -331,7 +381,10 @@ export default function PartsPage() {
             </Panel>
           ) : null}
 
-          <div className="space-y-2">
+          {/* Master list + details drawer. On xl the drawer opens inline and
+              the list narrows; below xl it slides over the page. */}
+          <div className="flex items-start">
+          <div className="min-w-0 flex-1 space-y-2 transition-all duration-300 ease-out">
             {loading ? (
               <Panel>
                 <EmptyState>Loading parts…</EmptyState>
@@ -350,20 +403,35 @@ export default function PartsPage() {
                 const currentStatusId =
                   currentStatus?.id ?? "";
                 const currentStatusName = currentStatus?.name ?? "Unknown";
+                const listingKey = `${part.id}-${statusRecord?.id ?? "no-status"}`;
+                const isActive = drawerOpen && selectedKey === listingKey;
 
                 return (
-                  <Panel key={`${part.id}-${statusRecord?.id ?? "no-status"}`} className="!p-4 flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-semibold text-zinc-100">
+                  <div
+                    key={listingKey}
+                    onClick={(event) => {
+                      if ((event.target as HTMLElement).closest("[data-no-select]")) return;
+                      setSelectedKey(listingKey);
+                      setDrawerOpen(true);
+                    }}
+                    className={`${CARD_INTERACTIVE} cursor-pointer p-4 flex flex-wrap items-center justify-between gap-4 ${
+                      isActive ? "ring-1 ring-emerald-400/50 bg-zinc-800/50" : ""
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      aria-label={`View details for ${catalog?.name ?? "part"}`}
+                      className="min-h-11 min-w-0 flex-1 basis-48 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
+                    >
+                      <span className="block truncate text-sm font-semibold text-zinc-100">
                         {catalog?.name ?? "Unnamed Part"}
-                      </p>
-                      <p className="text-[10px] font-mono text-zinc-600 mt-1">
+                      </span>
+                      <span className="mt-1 block truncate text-[10px] font-mono uppercase tracking-widest text-zinc-500">
                         {catalog?.sku ? `SKU ${catalog.sku}` : "No SKU"}
-                        {catalog?.description ? ` · ${catalog.description}` : ""}
-                      </p>
-                    </div>
+                      </span>
+                    </button>
 
-                    <div className="flex items-center gap-3">
+                    <div data-no-select className="flex items-center gap-3 cursor-default">
                       {canManage && statusRecord && statuses.length > 0 ? (
                         <div className="flex items-center gap-1">
                           <button
@@ -386,7 +454,7 @@ export default function PartsPage() {
                               );
                               commitQuantity(statusRecord.id, String(newQty));
                             }}
-                            className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded hover:bg-zinc-800 text-sm font-bold text-zinc-300"
+                            className={QTY_STEP}
                           >
                             −
                           </button>
@@ -414,7 +482,7 @@ export default function PartsPage() {
                               );
                             }}
                             onBlur={(e) => commitQuantity(statusRecord.id, e.target.value)}
-                            className="w-14 text-center bg-black border border-zinc-800 rounded py-1 text-sm text-white font-mono"
+                            className={`${INPUT} !w-16 px-1 text-center font-mono`}
                           />
 
                           <button
@@ -437,7 +505,7 @@ export default function PartsPage() {
                               );
                               commitQuantity(statusRecord.id, String(newQty));
                             }}
-                            className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded hover:bg-zinc-800 text-sm font-bold text-zinc-300"
+                            className={QTY_STEP}
                           >
                             +
                           </button>
@@ -505,14 +573,204 @@ export default function PartsPage() {
                         </SecondaryButton>
                       ) : null}
                     </div>
-                  </Panel>
+                  </div>
                 );
               })
             )}
           </div>
+
+          {/* Scrim for the overlay (below xl) versions of the drawer */}
+          <button
+            type="button"
+            aria-label="Close part details"
+            tabIndex={-1}
+            onClick={closeDrawer}
+            className={`fixed inset-0 z-30 bg-zinc-950/60 backdrop-blur-sm transition-opacity duration-300 ease-out xl:hidden ${
+              drawerShown ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          />
+
+          <aside
+            aria-label="Part details"
+            aria-hidden={!drawerShown}
+            inert={!drawerShown}
+            className={`fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col rounded-t-3xl border border-white/10 bg-zinc-900/90 backdrop-blur-xl shadow-2xl shadow-black/50 transition-all duration-300 ease-out md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-96 md:rounded-t-none md:rounded-l-3xl xl:sticky xl:top-6 xl:z-auto xl:max-h-[calc(100dvh-3rem)] xl:translate-x-0 xl:translate-y-0 xl:self-start xl:overflow-hidden xl:rounded-2xl xl:bg-zinc-900/40 ${
+              drawerShown
+                ? "translate-y-0 md:translate-x-0 xl:ml-6 xl:w-96 xl:opacity-100"
+                : "translate-y-full md:translate-y-0 md:translate-x-full xl:ml-0 xl:w-0 xl:border-transparent xl:opacity-0"
+            }`}
+          >
+            {activeListing ? (
+              <PartDrawerContent
+                key={`${activeListing.key}-${drawerEpoch}`}
+                part={activeListing.part}
+                statusName={activeListing.statusName}
+                quantity={activeListing.quantity}
+                canEditDescription={
+                  canManage &&
+                  Boolean(activeListing.part.part_catalog) &&
+                  !activeListing.part.part_catalog?.is_official &&
+                  activeListing.part.part_catalog?.team_id === teamId
+                }
+                canManage={canManage}
+                onClose={closeDrawer}
+                onSaved={async () => {
+                  if (teamId) await refresh(teamId);
+                }}
+              />
+            ) : null}
+          </aside>
+          </div>
         </>
       )}
     </AppShell>
+  );
+}
+
+function PartDrawerContent({
+  part,
+  statusName,
+  quantity,
+  canEditDescription,
+  canManage,
+  onClose,
+  onSaved,
+}: {
+  part: Part;
+  statusName: string;
+  quantity: number;
+  canEditDescription: boolean;
+  canManage: boolean;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const catalog = part.part_catalog;
+  const description = catalog?.description?.trim() ?? "";
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(description);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const save = async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await updatePartDescription(part.id, draft);
+      await onSaved();
+      setEditing(false);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Failed to save description");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className={`flex min-h-0 w-full flex-col gap-5 overflow-y-auto p-5 md:p-6 xl:w-96 ${SCROLLBAR}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <Label>Part details</Label>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close part details"
+          className="-mt-2 -mr-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/10 bg-zinc-800/60 text-zinc-200 transition-all hover:bg-zinc-700/60 active:scale-95"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <h2 className="break-words bg-gradient-to-b from-zinc-100 to-zinc-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+        {catalog?.name ?? "Unnamed Part"}
+      </h2>
+
+      <dl className="grid grid-cols-2 gap-3">
+        <div className="col-span-2 rounded-2xl border border-white/10 bg-zinc-900/40 p-4">
+          <dt className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            SKU
+          </dt>
+          <dd className="mt-1 break-all font-mono text-sm text-zinc-100">
+            {catalog?.sku || "No SKU"}
+          </dd>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-4">
+          <dt className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            Quantity
+          </dt>
+          <dd className="mt-1 font-mono text-2xl font-semibold text-zinc-100">
+            {quantity}
+          </dd>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-4">
+          <dt className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            Status
+          </dt>
+          <dd className="mt-1 break-words text-sm text-zinc-100">{statusName}</dd>
+        </div>
+      </dl>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <Label>Description</Label>
+          {canEditDescription && !editing ? (
+            <SecondaryButton type="button" onClick={() => setEditing(true)}>
+              Edit
+            </SecondaryButton>
+          ) : null}
+        </div>
+
+        {editing ? (
+          <div className="space-y-3">
+            <FieldInput
+              as="textarea"
+              aria-label="Part description"
+              rows={6}
+              value={draft}
+              disabled={saving}
+              onChange={(e) => setDraft(e.target.value)}
+            />
+            <ErrorText>{saveError}</ErrorText>
+            <div className="flex flex-wrap gap-2">
+              <PrimaryButton type="button" disabled={saving} onClick={save}>
+                {saving ? "Saving…" : "Save"}
+              </PrimaryButton>
+              <SecondaryButton
+                type="button"
+                disabled={saving}
+                onClick={() => {
+                  setEditing(false);
+                  setDraft(description);
+                  setSaveError(null);
+                }}
+              >
+                Cancel
+              </SecondaryButton>
+            </div>
+          </div>
+        ) : (
+          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-400">
+            {description || "No description"}
+          </p>
+        )}
+
+        {canManage && !canEditDescription && !editing ? (
+          <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            Official catalog descriptions are read-only
+          </p>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -529,10 +787,10 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider border transition-colors ${
+      className={`min-h-11 shrink-0 px-4 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider border transition-all duration-300 ease-out ${
         active
-          ? "border-zinc-500 bg-zinc-900 text-white"
-          : "border-zinc-900 text-zinc-500 hover:text-zinc-300"
+          ? "border-emerald-400/40 bg-emerald-500/10 text-zinc-100"
+          : "border-white/10 bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:border-white/20 hover:text-zinc-300"
       }`}
     >
       {label}
