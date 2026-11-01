@@ -239,12 +239,7 @@ export default function PartsPage() {
   };
 
   return (
-    <>
-    {/* ===== TEMP DIAGNOSTIC BANNER: START (remove this block, plus the wrapping <> and </> fragment) ===== */}
-    <div id="diag-parts-banner" className="w-full bg-red-600 text-white font-mono font-bold text-center py-4 text-xl my-4 rounded-xl z-50">
-      🚨 NEW PARTS CODE DEPLOYED V2 🚨
-    </div>
-    {/* ===== TEMP DIAGNOSTIC BANNER: END ===== */}
+    
     <AppShell
       eyebrow="Inventory"
       title="Parts"
@@ -638,7 +633,7 @@ export default function PartsPage() {
         </>
       )}
     </AppShell>
-    </>
+    
   );
 }
 
