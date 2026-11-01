@@ -202,6 +202,14 @@ export default function PartsPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [drawerOpen, closeDrawer]);
 
+  // #region agent log
+  useEffect(() => {
+    const banner = document.getElementById("diag-parts-banner");
+    const rect = banner?.getBoundingClientRect();
+    fetch('http://127.0.0.1:7787/ingest/11f8c054-3fd0-4031-b844-76703809d39a',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'da45ad'},body:JSON.stringify({sessionId:'da45ad',runId:'run1',hypothesisId:'A,B,C,D',location:'parts/page.tsx:mount',message:'parts page mounted in browser',data:{href:window.location.href,buildSha:process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA??null,vercelEnv:process.env.NEXT_PUBLIC_VERCEL_ENV??null,bannerInDom:Boolean(banner),bannerHeight:rect?.height??null,bannerDisplay:banner?getComputedStyle(banner).display:null,drawerInDom:Boolean(document.querySelector('aside[aria-label="Part details"]')),swControlled:Boolean(navigator.serviceWorker?.controller)},timestamp:Date.now()})}).catch(()=>{});
+  }, []);
+  // #endregion
+
   const handleCreate = async () => {
     if (!userId || !teamId || !hasValidCatalogSelection || !selectedStatusId) return;
     setBusy(true);
@@ -233,7 +241,7 @@ export default function PartsPage() {
   return (
     <>
     {/* ===== TEMP DIAGNOSTIC BANNER: START (remove this block, plus the wrapping <> and </> fragment) ===== */}
-    <div className="w-full bg-red-600 text-white font-mono font-bold text-center py-4 text-xl my-4 rounded-xl z-50">
+    <div id="diag-parts-banner" className="w-full bg-red-600 text-white font-mono font-bold text-center py-4 text-xl my-4 rounded-xl z-50">
       🚨 NEW PARTS CODE DEPLOYED V2 🚨
     </div>
     {/* ===== TEMP DIAGNOSTIC BANNER: END ===== */}
