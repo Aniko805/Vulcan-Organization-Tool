@@ -97,14 +97,20 @@ export async function curateNotebook(input: {
   const { supabase, send } = input;
   const { data: notebook, error: notebookError } = await supabase
     .from("notebooks")
-    .select("*, notebook_sections(*)")
+    .select("*")
     .eq("id", input.notebookId)
     .maybeSingle();
 
   if (notebookError) throw new Error(notebookError.message);
   if (!notebook) throw new Error("Notebook not found.");
 
-  const sections = ((notebook.notebook_sections ?? []) as SectionRow[]).sort(
+  const { data: sectionRows, error: sectionError } = await supabase
+    .from("notebook_sections")
+    .select("*")
+    .eq("notebook_id", notebook.id);
+  if (sectionError) throw new Error(sectionError.message);
+
+  const sections = ((sectionRows ?? []) as SectionRow[]).sort(
     (a, b) => a.tab_position - b.tab_position || a.section_position - b.section_position
   );
   if (sections.length === 0) {
@@ -263,18 +269,24 @@ export async function curateNotebook(input: {
 
     const hints = new Map<string, string>();
     if (notebook.template_id) {
-      const { data: template } = await supabase
-        .from("notebook_templates")
-        .select("notebook_template_tabs(name, notebook_template_sections(name, prompt_hint))")
-        .eq("id", notebook.template_id)
-        .maybeSingle();
-      const tabs = (template?.notebook_template_tabs ?? []) as {
-        name: string;
-        notebook_template_sections?: { name: string; prompt_hint: string | null }[];
-      }[];
-      for (const tab of tabs) {
-        for (const section of tab.notebook_template_sections ?? []) {
-          if (section.prompt_hint) hints.set(`${tab.name}|${section.name}`, section.prompt_hint);
+      const { data: tabRows } = await supabase
+        .from("notebook_template_tabs")
+        .select("id, name")
+        .eq("template_id", notebook.template_id);
+      const hintTabs = (tabRows ?? []) as { id: string; name: string }[];
+      const tabIds = hintTabs.map((tab) => tab.id);
+      if (tabIds.length > 0) {
+        const { data: hintSections } = await supabase
+          .from("notebook_template_sections")
+          .select("tab_id, name, prompt_hint")
+          .in("tab_id", tabIds);
+        for (const section of (hintSections ?? []) as {
+          tab_id: string;
+          name: string;
+          prompt_hint: string | null;
+        }[]) {
+          const tab = hintTabs.find((item) => item.id === section.tab_id);
+          if (tab && section.prompt_hint) hints.set(`${tab.name}|${section.name}`, section.prompt_hint);
         }
       }
     }

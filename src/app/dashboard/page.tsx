@@ -219,6 +219,17 @@ export default function DashboardPage() {
             </span>
           </div>
         </FeatureWidget>
+
+        <FeatureWidget title="Engineering Notebook" href="/engineering-notes" label="NOTEBOOK">
+          <div className="flex min-h-24 flex-col justify-between gap-4">
+            <p className="text-sm leading-relaxed text-zinc-400">
+              Capture build notes and turn a day into a curated engineering notebook.
+            </p>
+            <span className="w-fit rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[10px] font-mono uppercase text-amber-300">
+              Coming soon
+            </span>
+          </div>
+        </FeatureWidget>
       </div>
     </AppShell>
   );

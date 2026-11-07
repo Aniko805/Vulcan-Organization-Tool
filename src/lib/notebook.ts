@@ -2,6 +2,7 @@ import { supabase } from "./supabase";
 import type {
   Notebook,
   NotebookSection,
+  NotebookSectionRef,
   NotebookTemplate,
   NotebookTemplateExport,
   NotebookTemplateSection,
@@ -11,22 +12,6 @@ import type {
 export const NOTEBOOK_COOLDOWN_SECONDS = 120;
 export const MAX_TEMPLATE_TABS = 8;
 export const MAX_TEMPLATE_SECTIONS = 12;
-
-const TEMPLATE_SELECT = `
-  *,
-  notebook_template_tabs(
-    *,
-    notebook_template_sections(*)
-  )
-`;
-
-const NOTEBOOK_SELECT = `
-  *,
-  notebook_sections(
-    *,
-    notebook_section_refs(*)
-  )
-`;
 
 function sortTemplate(template: NotebookTemplate): NotebookTemplate {
   const tabs = [...(template.notebook_template_tabs ?? [])]
@@ -50,14 +35,88 @@ function sortNotebook(notebook: Notebook): Notebook {
   return { ...notebook, notebook_sections: sections };
 }
 
+async function sectionsForNotebooks(notebookIds: string[]): Promise<NotebookSection[]> {
+  if (notebookIds.length === 0) return [];
+  const { data: sectionRows, error } = await supabase
+    .from("notebook_sections")
+    .select("*")
+    .in("notebook_id", notebookIds);
+  if (error) throw new Error(error.message);
+
+  const sections = (sectionRows ?? []) as NotebookSection[];
+  const sectionIds = sections.map((section) => section.id);
+  let refs: NotebookSectionRef[] = [];
+  if (sectionIds.length > 0) {
+    const { data: refRows, error: refError } = await supabase
+      .from("notebook_section_refs")
+      .select("*")
+      .in("section_id", sectionIds);
+    if (refError) throw new Error(refError.message);
+    refs = (refRows ?? []) as NotebookSectionRef[];
+  }
+
+  const refsBySection = new Map<string, NotebookSectionRef[]>();
+  for (const ref of refs) {
+    const current = refsBySection.get(ref.section_id) ?? [];
+    current.push(ref);
+    refsBySection.set(ref.section_id, current);
+  }
+
+  return sections.map((section) => ({
+    ...section,
+    notebook_section_refs: refsBySection.get(section.id) ?? [],
+  }));
+}
+
+function withSections(notebooks: Notebook[], sections: NotebookSection[]): Notebook[] {
+  return notebooks.map((notebook) =>
+    sortNotebook({
+      ...notebook,
+      notebook_sections: sections.filter((section) => section.notebook_id === notebook.id),
+    })
+  );
+}
+
 export async function listTemplates(teamId: string): Promise<NotebookTemplate[]> {
   const { data, error } = await supabase
     .from("notebook_templates")
-    .select(TEMPLATE_SELECT)
+    .select("*")
     .or(`team_id.eq.${teamId},team_id.is.null`);
-
   if (error) throw new Error(error.message);
-  return ((data ?? []) as NotebookTemplate[]).map(sortTemplate);
+
+  const templates = (data ?? []) as NotebookTemplate[];
+  const templateIds = templates.map((template) => template.id);
+  if (templateIds.length === 0) return [];
+
+  const { data: tabRows, error: tabError } = await supabase
+    .from("notebook_template_tabs")
+    .select("*")
+    .in("template_id", templateIds);
+  if (tabError) throw new Error(tabError.message);
+  const tabs = (tabRows ?? []) as NotebookTemplateTab[];
+  const tabIds = tabs.map((tab) => tab.id);
+
+  let sectionRows: NotebookTemplateSection[] = [];
+  if (tabIds.length > 0) {
+    const { data: sections, error: sectionError } = await supabase
+      .from("notebook_template_sections")
+      .select("*")
+      .in("tab_id", tabIds);
+    if (sectionError) throw new Error(sectionError.message);
+    sectionRows = (sections ?? []) as NotebookTemplateSection[];
+  }
+
+  return templates.map((template) =>
+    sortTemplate({
+      ...template,
+      notebook_template_tabs: tabs
+        .filter((tab) => tab.template_id === template.id)
+        .map((tab) => ({
+          ...tab,
+          notebook_template_sections: sectionRows.filter((section) => section.tab_id === tab.id),
+        })),
+    })
+  );
 }
 
 export function activeTemplate(templates: NotebookTemplate[], teamId: string) {
@@ -262,13 +321,15 @@ export async function setTeamAi(teamId: string, provider: string | null, model: 
 export async function getNotebook(teamId: string, date: string): Promise<Notebook | null> {
   const { data, error } = await supabase
     .from("notebooks")
-    .select(NOTEBOOK_SELECT)
+    .select("*")
     .eq("team_id", teamId)
     .eq("notebook_date", date)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-  return data ? sortNotebook(data as Notebook) : null;
+  if (!data) return null;
+  const sections = await sectionsForNotebooks([data.id]);
+  return withSections([data as Notebook], sections)[0];
 }
 
 export async function ensureNotebook(teamId: string, date: string): Promise<Notebook> {
@@ -325,12 +386,14 @@ export async function listNotebooksForDates(teamId: string, dates: string[]): Pr
   if (dates.length === 0) return [];
   const { data, error } = await supabase
     .from("notebooks")
-    .select(NOTEBOOK_SELECT)
+    .select("*")
     .eq("team_id", teamId)
     .in("notebook_date", dates);
 
   if (error) throw new Error(error.message);
-  return ((data ?? []) as Notebook[]).map(sortNotebook);
+  const notebooks = (data ?? []) as Notebook[];
+  const sections = await sectionsForNotebooks(notebooks.map((notebook) => notebook.id));
+  return withSections(notebooks, sections);
 }
 
 export async function updateSectionContent(input: {
