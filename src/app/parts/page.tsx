@@ -55,6 +55,7 @@ export default function PartsPage() {
   const [selectedCatalog, setSelectedCatalog] = useState<PartCatalog | null>(null);
   const [selectedStatusId, setSelectedStatusId] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerEpoch, setDrawerEpoch] = useState(0);
@@ -157,10 +158,21 @@ export default function PartsPage() {
       ? partStatuses.map((statusRecord) => ({ part, statusRecord }))
       : [{ part, statusRecord: null }];
   });
+  const searchQuery = search.trim().toLowerCase();
+  const searched = searchQuery
+    ? listings.filter(({ part }) => {
+        const name = part.part_catalog?.name ?? "";
+        const sku = part.part_catalog?.sku ?? "";
+        return (
+          name.toLowerCase().includes(searchQuery) ||
+          sku.toLowerCase().includes(searchQuery)
+        );
+      })
+    : listings;
   const visible =
     filter === "all"
-      ? listings
-      : listings.filter(
+      ? searched
+      : searched.filter(
           ({ statusRecord }) =>
             statusRecord?.status_id === filter ||
             statusRecord?.status_list?.id === filter ||
@@ -252,6 +264,7 @@ export default function PartsPage() {
             const nextTeamId = e.target.value || null;
             refreshGeneration.current += 1;
             setFilter("all");
+            setSearch("");
             setSelectedKey(null);
             setDrawerOpen(false);
             setParts([]);
@@ -356,14 +369,23 @@ export default function PartsPage() {
             </Panel>
           )}
 
-          <div className={`flex gap-2 px-4 ${H_SCROLL}`}>
+          <div className="flex flex-col gap-3 px-4 sm:flex-row sm:items-center">
+            <FieldInput
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by name or SKU"
+              aria-label="Search inventory by name or SKU"
+              className="sm:max-w-xs"
+            />
+            <div className={`flex min-w-0 flex-1 gap-2 ${H_SCROLL}`}>
             <FilterChip
               active={filter === "all"}
               onClick={() => setFilter("all")}
-              label={`All (${listings.length})`}
+              label={`All (${searched.length})`}
             />
             {statuses.map((status) => {
-              const count = listings.filter(
+              const count = searched.filter(
                 ({ statusRecord }) =>
                   statusRecord?.status_id === status.id ||
                   statusRecord?.status_list?.id === status.id ||
@@ -379,6 +401,7 @@ export default function PartsPage() {
                 />
               );
             })}
+            </div>
           </div>
 
           {!loading && statuses.length === 0 ? (
@@ -400,7 +423,11 @@ export default function PartsPage() {
               </Panel>
             ) : visible.length === 0 ? (
               <Panel>
-                <EmptyState>No parts in this filter.</EmptyState>
+                <EmptyState>
+                  {searchQuery
+                    ? "No listings match that name or SKU."
+                    : "No parts in this filter."}
+                </EmptyState>
               </Panel>
             ) : (
               visible.map(({ part, statusRecord }) => {
