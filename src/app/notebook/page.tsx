@@ -16,14 +16,16 @@ import {
   formatNotebookDate,
   localDateISO,
   shiftISODate,
+  shortWeekday,
 } from "@/lib/dates";
-import { getNotebook, notebookTabs, updateSectionContent } from "@/lib/notebook";
+import { getNotebook, listNotebookRows, notebookTabs, updateSectionContent } from "@/lib/notebook";
 import {
   MAX_NOTE_IMAGES,
   addNoteImage,
   attachSignedUrls,
   createNote,
   deleteNote,
+  listNoteIndex,
   listNotes,
   signedImageUrls,
   updateNote,
@@ -45,7 +47,15 @@ import {
 } from "@/lib/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type Mode = "stream" | "document";
+type Mode = "stream" | "document" | "timeline";
+
+type TimelineDay = {
+  date: string;
+  noteCount: number;
+  subteams: string[];
+  status: string | null;
+  snippet: string;
+};
 type Paper = "a4" | "letter";
 
 const DEFAULT_SUBTEAMS = [
@@ -75,6 +85,42 @@ function sameName(a: string, b: string) {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
+function buildTimeline(
+  notes: Pick<EngNote, "note_date" | "subteam" | "body" | "title">[],
+  books: { notebook_date: string; status: string; title: string | null }[]
+): TimelineDay[] {
+  const days = new Map<string, TimelineDay>();
+  for (const note of notes) {
+    const current = days.get(note.note_date) ?? {
+      date: note.note_date,
+      noteCount: 0,
+      subteams: [],
+      status: null,
+      snippet: "",
+    };
+    current.noteCount += 1;
+    if (note.subteam && !current.subteams.includes(note.subteam)) {
+      current.subteams.push(note.subteam);
+    }
+    if (!current.snippet) {
+      current.snippet = (note.title || note.body || "").replace(/\s+/g, " ").slice(0, 140);
+    }
+    days.set(note.note_date, current);
+  }
+  for (const book of books) {
+    const current = days.get(book.notebook_date) ?? {
+      date: book.notebook_date,
+      noteCount: 0,
+      subteams: [],
+      status: null,
+      snippet: book.title ?? "",
+    };
+    current.status = book.status;
+    days.set(book.notebook_date, current);
+  }
+  return [...days.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
 export default function NotebookPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -88,6 +134,8 @@ export default function NotebookPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [mode, setMode] = useState<Mode>("stream");
+  const [timeline, setTimeline] = useState<TimelineDay[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
   const [filter, setFilter] = useState("all");
   const [paper, setPaper] = useState<Paper>("a4");
   const [pdfNotice, setPdfNotice] = useState<string | null>(null);
@@ -171,6 +219,27 @@ export default function NotebookPage() {
     };
     void run();
   }, [teamId, date, loadDay]);
+
+  const loadTimeline = useCallback(async (tid: string) => {
+    setTimelineLoading(true);
+    try {
+      const [index, books] = await Promise.all([
+        listNoteIndex(tid),
+        listNotebookRows(tid),
+      ]);
+      setTimeline(buildTimeline(index, books));
+    } catch (e) {
+      setTimeline([]);
+      setError(e instanceof Error ? e.message : "Failed to load the timeline");
+    } finally {
+      setTimelineLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!teamId) return;
+    void loadTimeline(teamId);
+  }, [teamId, loadTimeline]);
 
   useEffect(() => {
     if (!teamId) return;
@@ -276,7 +345,7 @@ export default function NotebookPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not post the log");
     } finally {
-      await loadDay(teamId, date);
+      await Promise.all([loadDay(teamId, date), loadTimeline(teamId)]);
       setPosting(false);
     }
   };
@@ -286,7 +355,7 @@ export default function NotebookPage() {
     try {
       await updateNote(note.id, { title: editTitle, body: editBody });
       setEditingNoteId(null);
-      await loadDay(teamId, date);
+      await Promise.all([loadDay(teamId, date), loadTimeline(teamId)]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save the log");
     }
@@ -296,7 +365,7 @@ export default function NotebookPage() {
     if (!teamId || !window.confirm("Delete this log and its photos?")) return;
     try {
       await deleteNote(note);
-      await loadDay(teamId, date);
+      await Promise.all([loadDay(teamId, date), loadTimeline(teamId)]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not delete the log");
     }
@@ -337,6 +406,7 @@ export default function NotebookPage() {
             const next = event.target.value || null;
             setNotes([]);
             setNotebook(null);
+            setTimeline([]);
             setFilter("all");
             setLoading(Boolean(next));
             setTeamId(next);
@@ -372,6 +442,7 @@ export default function NotebookPage() {
                 {(
                   [
                     ["stream", "Log Stream"],
+                    ["timeline", "Timeline"],
                     ["document", "Compiled Document"],
                   ] as [Mode, string][]
                 ).map(([value, label]) => (
@@ -392,6 +463,7 @@ export default function NotebookPage() {
                 ))}
               </div>
 
+              {mode === "timeline" ? null : (
               <div className="flex flex-wrap items-center gap-2">
                 <SecondaryButton
                   type="button"
@@ -418,8 +490,10 @@ export default function NotebookPage() {
                   Today
                 </SecondaryButton>
               </div>
+              )}
             </div>
 
+            {mode === "timeline" ? null : (
             <div
               role="group"
               aria-label="Filter by subteam"
@@ -444,9 +518,68 @@ export default function NotebookPage() {
                 );
               })}
             </div>
+            )}
           </Panel>
 
-          {mode === "stream" ? (
+          {mode === "timeline" ? (
+            <div className="mx-auto w-full max-w-2xl">
+              {timelineLoading ? (
+                <Panel>
+                  <EmptyState>Loading timeline…</EmptyState>
+                </Panel>
+              ) : timeline.length === 0 ? (
+                <Panel>
+                  <EmptyState>No logs yet. Post one from the Log Stream.</EmptyState>
+                </Panel>
+              ) : (
+                <ol className="relative ml-3 border-l border-emerald-400/30 pl-8">
+                  {timeline.map((day, index) => {
+                    const curated = day.status === "curated";
+                    const isLast = index === timeline.length - 1;
+                    return (
+                      <li key={day.date} className={isLast ? "relative" : "relative pb-8"}>
+                        <span
+                          aria-hidden="true"
+                          className={`absolute -left-[2.4rem] top-3 h-3 w-3 rounded-full ring-4 ring-zinc-950 ${
+                            curated
+                              ? "bg-emerald-400 shadow-lg shadow-emerald-500/30"
+                              : "border border-zinc-500 bg-zinc-900"
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDate(day.date);
+                            setMode("document");
+                          }}
+                          className={`${CARD} block w-full space-y-2 p-4 text-left transition-all duration-300 ease-out hover:border-white/20 hover:bg-zinc-800/50`}
+                        >
+                          <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                            <span className="text-sm font-semibold tracking-tight text-zinc-100">
+                              {formatNotebookDate(day.date)}
+                            </span>
+                            <span className={`text-[10px] ${MONO_LABEL}`}>
+                              {shortWeekday(day.date)}
+                            </span>
+                          </span>
+                          <span className={`block text-[10px] ${MONO_LABEL}`}>
+                            {day.noteCount} {day.noteCount === 1 ? "log" : "logs"}
+                            {curated ? " · curated" : ""}
+                            {day.subteams.length > 0 ? ` · ${day.subteams.join(" · ")}` : ""}
+                          </span>
+                          {day.snippet ? (
+                            <span className="block text-sm leading-relaxed text-zinc-400">
+                              {day.snippet}
+                            </span>
+                          ) : null}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </div>
+          ) : mode === "stream" ? (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-start">
               {/* Logging form */}
               <Panel className="space-y-3 lg:sticky lg:top-6">
@@ -704,7 +837,7 @@ export default function NotebookPage() {
                     type="button"
                     onClick={() =>
                       setPdfNotice(
-                        "Full-season PDF export is a mockup for now. To print several days, use Engineering Notes → Doc and print."
+                        "Full-season PDF export is not available yet."
                       )
                     }
                   >
@@ -871,8 +1004,7 @@ export default function NotebookPage() {
 
                   {!loading && !useCurated && notes.length > 0 ? (
                     <p className="no-print font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-                      No curated notebook for this date yet. Generate one with Update
-                      notebook in Engineering Notes.
+                      No curated notebook for this date yet.
                     </p>
                   ) : null}
 

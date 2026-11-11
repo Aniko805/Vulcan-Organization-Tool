@@ -4,7 +4,7 @@ Ordered delivery phases for Vulcan. Each phase should be small enough for one fo
 
 **How to use:** Agents take the **first incomplete** phase, create a dated feature spec under `specs/YYYY-MM-DD-<slug>/` from `_feature-template/`, then implement. See `SDD-PROMPT.md`.
 
-**Current nav (auth-gated):** Overview `/dashboard` · Personal Tasks `/personal-tasks` · Team `/team` · Team Tasks `/team-tasks` · Parts `/parts` · Part Identifier `/parts/identify` · Engineering Notes `/engineering-notes` (Phase 10+) · Settings `/settings`.
+**Current nav (auth-gated):** Overview `/dashboard` · Personal Tasks `/personal-tasks` · Team `/team` · Team Tasks `/team-tasks` · Parts `/parts` · Part Identifier `/parts/identify` · Notebook `/notebook` · Settings `/settings`.
 
 **Latest feature pack:** `specs/2026-10-17-engineering-notebook/`
 

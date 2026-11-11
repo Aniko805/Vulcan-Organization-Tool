@@ -51,7 +51,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/team-tasks` | Team Kanban board |
 | `/personal-tasks` | Personal + assigned tasks |
 | `/parts` | Team parts inventory |
-| `/engineering-notes` | Dated engineering notes and the curated notebook |
+| `/notebook` | Engineering notebook: log stream, downward timeline, and compiled day |
 | `/settings` | Profile settings |
 
 ## Spec Driven Development

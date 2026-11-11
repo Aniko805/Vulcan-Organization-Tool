@@ -56,7 +56,7 @@ src/
     team/
     team-tasks/              # Team Kanban
     parts/                   # Inventory
-    engineering-notes/       # Dated notes and curated notebook
+    notebook/                # Log stream, timeline, and compiled notebook
     settings/
     components/              # Shared UI (Sidebar, AppShell, ui.ts design tokens)
   lib/
@@ -76,7 +76,7 @@ tools/catalog-ingest/        # Offline vendor catalog fetch; not imported by the
 
 - Prefer App Router folders with `page.tsx` per route.
 - Auth-gated tool routes redirect unauthenticated users to `/login` (pattern already used in `Sidebar`).
-- Sidebar nav: Overview (`/dashboard`), Personal Tasks (`/personal-tasks`), Team (`/team`), Team Tasks (`/team-tasks`), Parts (`/parts`), Engineering Notes (`/engineering-notes`), Settings (`/settings`).
+- Sidebar nav: Overview (`/dashboard`), Personal Tasks (`/personal-tasks`), Team (`/team`), Team Tasks (`/team-tasks`), Parts (`/parts`), Notebook (`/notebook`), Settings (`/settings`).
 
 ### Interactive vs server components
 

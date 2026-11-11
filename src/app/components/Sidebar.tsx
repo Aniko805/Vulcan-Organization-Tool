@@ -54,7 +54,6 @@ export default function Sidebar() {
     { label: "Team Tasks", href: "/team-tasks" },
     { label: "Parts", href: "/parts" },
     { label: "Part Identifier", href: "/parts/identify" },
-    { label: "Engineering Notes", href: "/engineering-notes" },
     { label: "Notebook", href: "/notebook" },
     { label: "Settings", href: "/settings" },
     
@@ -96,8 +95,8 @@ export default function Sidebar() {
         <nav className="space-y-1">
           {navItems.map((item) => {
             const isActive =
-              item.href === "/engineering-notes"
-                ? pathname === item.href || pathname.startsWith("/engineering-notes/")
+              item.href === "/notebook"
+                ? pathname === item.href || pathname.startsWith("/notebook/")
                 : pathname === item.href;
             return (
               <Link

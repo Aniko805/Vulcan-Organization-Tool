@@ -220,7 +220,7 @@ export default function DashboardPage() {
           </div>
         </FeatureWidget>
 
-        <FeatureWidget title="Engineering Notebook" href="/engineering-notes" label="NOTEBOOK">
+        <FeatureWidget title="Engineering Notebook" href="/notebook" label="NOTEBOOK">
           <div className="flex min-h-24 flex-col justify-between gap-4">
             <p className="text-sm leading-relaxed text-zinc-400">
               Capture build notes and turn a day into a curated engineering notebook.
