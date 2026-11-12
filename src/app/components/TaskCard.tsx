@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { FieldInput, SecondaryButton } from "@/app/components/AppShell";
 import { BTN_SECONDARY } from "@/app/components/ui";
@@ -28,7 +31,48 @@ export default function TaskCard({
   onStatusChange: (status: TaskStatus) => void;
   onDelete?: () => void;
 }) {
+  const [minimized, setMinimized] = useState(true);
   const dueUrgency = getDueUrgency(task.due_date, task.status);
+  const dueClass =
+    dueUrgency === "overdue"
+      ? "text-rose-300"
+      : dueUrgency === "today" || dueUrgency === "tomorrow"
+        ? "text-amber-300"
+        : "";
+  const dueText = !task.due_date
+    ? "No due date"
+    : dueUrgency === "overdue"
+      ? `Overdue · ${task.due_date}`
+      : dueUrgency === "today"
+        ? "Due today"
+        : dueUrgency === "tomorrow"
+          ? "Due tomorrow"
+          : `Due ${task.due_date}`;
+  const toggleButton = (
+    <button
+      type="button"
+      onClick={() => setMinimized((current) => !current)}
+      aria-expanded={!minimized}
+      aria-controls={`task-body-${task.id}`}
+      aria-label={minimized ? `Expand ${task.name}` : `Minimize ${task.name}`}
+      className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-800/60 text-zinc-300 transition-all duration-300 ease-out after:absolute after:-inset-1 after:content-[''] hover:border-white/20 hover:bg-zinc-700/60 hover:text-zinc-100 active:scale-95"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className={`h-3.5 w-3.5 transition-transform duration-300 ease-out ${
+          minimized ? "" : "rotate-180"
+        }`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </button>
+  );
   const importanceClass = {
     critical: "border-l-rose-500 bg-rose-950/25 text-rose-100",
     high: "border-l-orange-400 bg-orange-950/20 text-orange-100",
@@ -53,7 +97,7 @@ export default function TaskCard({
       draggable={Boolean(onDragStart)}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className={`space-y-3 p-4 rounded-2xl backdrop-blur-xl border border-white/10 border-l-4 shadow-2xl shadow-black/50 ${importanceClass} hover:border-t-white/20 hover:border-r-white/20 hover:border-b-white/20 transition-all duration-300 ease-out ${
+      className={`${minimized ? "p-3" : "space-y-3 p-4"} rounded-2xl backdrop-blur-xl border border-white/10 border-l-4 shadow-2xl shadow-black/50 ${importanceClass} hover:border-t-white/20 hover:border-r-white/20 hover:border-b-white/20 transition-all duration-300 ease-out ${
         onDragStart ? "cursor-grab active:cursor-grabbing" : ""
       } ${
         isDragging ? "opacity-50" : ""
@@ -65,6 +109,21 @@ export default function TaskCard({
             : ""
       }`}
     >
+      {minimized ? (
+        <div id={`task-body-${task.id}`} className="flex items-center gap-3">
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <h3 className="truncate text-xs font-semibold text-zinc-100">
+              {task.name}
+            </h3>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-mono text-zinc-500">
+              <AssigneeAvatars assignees={task.task_assignees ?? []} />
+              <span className={dueClass}>{dueText}</span>
+            </div>
+          </div>
+          {toggleButton}
+        </div>
+      ) : (
+      <div id={`task-body-${task.id}`} className="space-y-3">
       <div className="flex justify-between items-start gap-3">
         <div className="min-w-0 space-y-1">
           <span
@@ -81,9 +140,12 @@ export default function TaskCard({
             <span className="text-[9px] font-mono text-amber-400">Saving...</span>
           ) : null}
         </div>
-        <span className={`shrink-0 text-[10px] font-mono uppercase ${importanceLabelClass}`}>
-          {task.importance}
-        </span>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className={`text-[10px] font-mono uppercase ${importanceLabelClass}`}>
+            {task.importance}
+          </span>
+          {toggleButton}
+        </div>
       </div>
 
       {task.description ? (
@@ -94,25 +156,7 @@ export default function TaskCard({
 
       <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-zinc-500">
         <span>Status: {task.status.replace("_", " ")}</span>
-        {task.due_date ? (
-          <span
-            className={
-              dueUrgency === "overdue"
-                ? "text-rose-300"
-                : dueUrgency === "today" || dueUrgency === "tomorrow"
-                  ? "text-amber-300"
-                  : ""
-            }
-          >
-            {dueUrgency === "overdue"
-              ? `Overdue · ${task.due_date}`
-              : dueUrgency === "today"
-                ? "Due today"
-                : dueUrgency === "tomorrow"
-                  ? "Due tomorrow"
-                  : `Due ${task.due_date}`}
-          </span>
-        ) : null}
+        {task.due_date ? <span className={dueClass}>{dueText}</span> : null}
       </div>
 
       {parentTask ? (
@@ -179,10 +223,10 @@ export default function TaskCard({
       <div className="flex flex-wrap gap-2">
         {!task.id.startsWith("temp-") ? (
           <Link
-            href={addChildHref(task)}
+            href={createSubtaskHref(task)}
             className={BTN_SECONDARY}
           >
-            Add child
+            Create subtask
           </Link>
         ) : null}
         {onDelete && !task.id.startsWith("temp-") ? (
@@ -191,7 +235,52 @@ export default function TaskCard({
           </SecondaryButton>
         ) : null}
       </div>
+      </div>
+      )}
     </article>
+  );
+}
+
+function AssigneeAvatars({
+  assignees,
+}: {
+  assignees: NonNullable<TaskWithRelations["task_assignees"]>;
+}) {
+  if (assignees.length === 0) {
+    return <span>Unassigned</span>;
+  }
+
+  const shown = assignees.slice(0, 3);
+  const extra = assignees.length - shown.length;
+  const names = assignees
+    .map((assignee) => displayNameFromProfile(assignee.profiles))
+    .join(", ");
+
+  return (
+    <span className="inline-flex items-center" title={names} aria-label={`Assigned to ${names}`}>
+      {shown.map((assignee, index) => {
+        const name = displayNameFromProfile(assignee.profiles);
+        const avatar = assignee.profiles?.avatar_image;
+        return (
+          <span
+            key={assignee.user_id}
+            className={`inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-zinc-800/60 text-[10px] font-semibold uppercase text-zinc-300 ${
+              index > 0 ? "-ml-1.5" : ""
+            }`}
+          >
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatar} alt="" className="h-full w-full object-cover" />
+            ) : (
+              name.charAt(0) || "?"
+            )}
+          </span>
+        );
+      })}
+      {extra > 0 ? (
+        <span className="ml-1.5 text-[10px] text-zinc-400">+{extra}</span>
+      ) : null}
+    </span>
   );
 }
 
@@ -213,7 +302,7 @@ function taskHref(task: TaskLink) {
   return `${board}#task-${encodeURIComponent(task.id)}`;
 }
 
-function addChildHref(task: TaskWithRelations) {
+function createSubtaskHref(task: TaskWithRelations) {
   const params = new URLSearchParams({ new: "1", parent: task.id });
   if (!task.is_personal && task.team_id) params.set("team", task.team_id);
 
