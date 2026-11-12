@@ -57,6 +57,13 @@ export default function PartsIdentifyPage() {
       <Sidebar />
 
       <main className="flex-1 min-w-0 px-4 pt-16 pb-6 md:p-10 max-w-5xl mx-auto space-y-8">
+        <div
+          role="status"
+          className="no-print w-full rounded-2xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-center font-mono text-xs font-semibold uppercase tracking-widest text-amber-200 backdrop-blur-xl"
+        >
+          Coming soon
+        </div>
+
         <header className="border-b border-white/10 pb-6">
           <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-1">
             Tools / CV Identification
