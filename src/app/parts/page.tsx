@@ -467,7 +467,7 @@ export default function PartsPage() {
                       </span>
                     </button>
 
-                    <div data-no-select className="flex items-center gap-3 cursor-default">
+                    <div data-no-select className="flex w-full flex-wrap items-center gap-3 cursor-default sm:w-auto">
                       {canManage && statusRecord && statuses.length > 0 ? (
                         <div className="flex items-center gap-1">
                           <button
@@ -555,7 +555,7 @@ export default function PartsPage() {
                       {canManage && statusRecord && statuses.length > 0 ? (
                         <FieldInput
                           as="select"
-                          className="w-40"
+                          className="w-full sm:w-40"
                           value={currentStatusId}
                           onChange={async (e) => {
                             try {
@@ -630,7 +630,7 @@ export default function PartsPage() {
             aria-label="Part details"
             aria-hidden={!drawerShown}
             inert={!drawerShown}
-            className={`fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col rounded-t-3xl border border-white/10 bg-zinc-900/90 backdrop-blur-xl shadow-2xl shadow-black/50 transition-all duration-300 ease-out md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-96 md:rounded-t-none md:rounded-l-3xl xl:sticky xl:top-6 xl:z-auto xl:max-h-[calc(100dvh-3rem)] xl:translate-x-0 xl:translate-y-0 xl:self-start xl:overflow-hidden xl:rounded-2xl xl:bg-zinc-900/40 ${
+            className={`fixed inset-x-0 bottom-0 z-40 flex max-h-[92dvh] flex-col rounded-t-3xl border border-white/10 bg-zinc-900/90 backdrop-blur-xl shadow-2xl shadow-black/50 transition-all duration-300 ease-out md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-96 md:rounded-t-none md:rounded-l-3xl xl:sticky xl:top-6 xl:z-auto xl:max-h-[calc(100dvh-3rem)] xl:translate-x-0 xl:translate-y-0 xl:self-start xl:overflow-hidden xl:rounded-2xl xl:bg-zinc-900/40 ${
               drawerShown
                 ? "translate-y-0 md:translate-x-0 xl:ml-6 xl:w-96 xl:opacity-100"
                 : "translate-y-full md:translate-y-0 md:translate-x-full xl:ml-0 xl:w-0 xl:border-transparent xl:opacity-0"

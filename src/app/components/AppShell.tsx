@@ -26,7 +26,7 @@ export function Panel({
   interactive?: boolean;
 }) {
   return (
-    <div className={`p-6 ${interactive ? CARD_INTERACTIVE : CARD} ${className}`}>
+    <div className={`min-w-0 p-4 md:p-6 ${interactive ? CARD_INTERACTIVE : CARD} ${className}`}>
       {children}
     </div>
   );
@@ -144,15 +144,15 @@ export default function AppShell({
         }
       >
         <header className="no-print flex flex-wrap justify-between items-end gap-4 border-b border-white/10 pb-4 md:pb-6">
-          <div>
+          <div className="min-w-0">
             {eyebrow ? (
               <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-1">
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-100">{title}</h1>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-100 break-words">{title}</h1>
           </div>
-          {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+          {actions ? <div className="flex w-full flex-wrap gap-2 sm:w-auto">{actions}</div> : null}
         </header>
         {children}
       </main>

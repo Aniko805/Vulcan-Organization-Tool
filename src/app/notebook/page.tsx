@@ -443,28 +443,30 @@ export default function NotebookPage() {
               <div
                 role="tablist"
                 aria-label="View mode"
-                className="flex w-full gap-1"
+                className="flex w-full gap-1 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:backdrop-blur-md [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20"
               >
                 {(
                   [
-                    ["stream", "Log Stream"],
-                    ["timeline", "Timeline"],
-                    ["document", "Compiled Document"],
-                  ] as [Mode, string][]
-                ).map(([value, label]) => (
+                    ["stream", "Log Stream", "Stream"],
+                    ["timeline", "Timeline", "Timeline"],
+                    ["document", "Compiled Document", "Document"],
+                  ] as [Mode, string, string][]
+                ).map(([value, label, shortLabel]) => (
                   <button
                     key={value}
                     type="button"
                     role="tab"
                     aria-selected={mode === value}
                     onClick={() => setMode(value)}
-                    className={`min-h-11 flex-1 rounded-xl border px-2 font-mono text-[10px] uppercase tracking-widest transition-all duration-300 ease-out sm:px-4 sm:text-xs ${
+                    aria-label={label}
+                    className={`min-h-11 flex-1 shrink-0 whitespace-nowrap rounded-xl border px-3 font-mono text-[10px] uppercase tracking-widest transition-all duration-300 ease-out sm:px-4 sm:text-xs ${
                       mode === value
                         ? "border-emerald-400/40 bg-emerald-500/10 text-zinc-100 ring-1 ring-emerald-400/30"
                         : "border-transparent text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300"
                     }`}
                   >
-                    {label}
+                    <span className="sm:hidden">{shortLabel}</span>
+                    <span className="hidden sm:inline">{label}</span>
                   </button>
                 ))}
               </div>
@@ -587,13 +589,13 @@ export default function NotebookPage() {
                               {shortWeekday(day.date)}
                             </span>
                           </span>
-                          <span className={`block text-[10px] ${MONO_LABEL}`}>
+                          <span className={`block break-words text-[10px] ${MONO_LABEL}`}>
                             {day.noteCount} {day.noteCount === 1 ? "log" : "logs"}
                             {curated ? " · curated" : ""}
                             {day.subteams.length > 0 ? ` · ${day.subteams.join(" · ")}` : ""}
                           </span>
                           {day.snippet ? (
-                            <span className="block text-sm leading-relaxed text-zinc-400">
+                            <span className="block break-words text-sm leading-relaxed text-zinc-400">
                               {day.snippet}
                             </span>
                           ) : null}
@@ -894,7 +896,7 @@ export default function NotebookPage() {
                       {team?.team_number ? ` · #${team.team_number}` : ""}
                     </p>
                     <h2
-                      className={`text-3xl font-extrabold tracking-tight ${HEADING_GRADIENT}`}
+                      className={`break-words text-2xl font-extrabold tracking-tight md:text-3xl ${HEADING_GRADIENT}`}
                     >
                       Engineering Notebook
                     </h2>

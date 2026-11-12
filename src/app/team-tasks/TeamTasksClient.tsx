@@ -485,7 +485,7 @@ export default function TeamTasksClient({
       <div className="space-y-6">
         {/* Active Team Info Header Badge */}
         <div className={`flex items-center justify-between ${CARD} px-4 py-3 text-xs`}>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 break-words">
             <span className="text-zinc-500 font-mono">ACTIVE TEAM:</span>
             {activeTeam ? (
               <span className="font-semibold text-zinc-100 font-mono">

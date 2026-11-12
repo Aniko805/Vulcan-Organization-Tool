@@ -733,9 +733,9 @@ export default function TeamPage() {
                           </div>
 
                           {/* Actions: Dynamic Dropdowns & Add Button */}
-                          <div className="flex items-center gap-4">
+                          <div className="flex w-full flex-wrap items-center gap-3 md:w-auto md:gap-4">
                             {isAdmin ? (
-                              <div className="flex flex-col gap-2 border-l border-white/10 pl-4">
+                              <div className="flex flex-col gap-2 md:border-l md:border-white/10 md:pl-4">
                                 {/* Stacked Dropdowns */}
                                 <div className="flex flex-col gap-2">
                                   {assignedRoleIds.length === 0 ? (

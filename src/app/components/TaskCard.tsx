@@ -97,7 +97,7 @@ export default function TaskCard({
       draggable={Boolean(onDragStart)}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className={`${minimized ? "p-3" : "space-y-3 p-4"} rounded-2xl backdrop-blur-xl border border-white/10 border-l-4 shadow-2xl shadow-black/50 ${importanceClass} hover:border-t-white/20 hover:border-r-white/20 hover:border-b-white/20 transition-all duration-300 ease-out ${
+      className={`min-w-0 ${minimized ? "p-3" : "space-y-3 p-3 md:p-4"} rounded-2xl backdrop-blur-xl border border-white/10 border-l-4 shadow-2xl shadow-black/50 ${importanceClass} hover:border-t-white/20 hover:border-r-white/20 hover:border-b-white/20 transition-all duration-300 ease-out ${
         onDragStart ? "cursor-grab active:cursor-grabbing" : ""
       } ${
         isDragging ? "opacity-50" : ""
@@ -185,7 +185,7 @@ export default function TaskCard({
           {task.task_assignees.map((assignee) => (
             <span
               key={assignee.user_id}
-              className="text-[10px] font-mono text-zinc-400 bg-zinc-800/60 px-2 py-0.5 rounded-lg border border-white/10"
+              className="max-w-full truncate text-[10px] font-mono text-zinc-400 bg-zinc-800/60 px-2 py-0.5 rounded-lg border border-white/10"
             >
               {displayNameFromProfile(assignee.profiles)}
             </span>
@@ -198,7 +198,7 @@ export default function TaskCard({
           {task.task_parts.map((taskPart) => (
             <span
               key={taskPart.part_id}
-              className="text-[10px] font-mono text-emerald-300/80 bg-zinc-800/60 px-2 py-0.5 rounded-lg border border-white/10"
+              className="max-w-full truncate text-[10px] font-mono text-emerald-300/80 bg-zinc-800/60 px-2 py-0.5 rounded-lg border border-white/10"
             >
               {taskPart.parts?.part_catalog?.name ?? "Part"}
               {taskPart.quantity ? ` × ${taskPart.quantity}` : ""}
@@ -288,7 +288,7 @@ function TaskLink({ task }: { task: TaskLink }) {
   return (
     <Link
       href={taskHref(task)}
-      className="text-zinc-300 underline decoration-zinc-700 underline-offset-2 hover:text-zinc-100"
+      className="inline-flex min-h-11 max-w-full items-center break-words text-zinc-300 underline decoration-zinc-700 underline-offset-2 hover:text-zinc-100"
     >
       {task.name}
     </Link>
