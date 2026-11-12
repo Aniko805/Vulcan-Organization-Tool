@@ -157,7 +157,11 @@ export default function LoginPage() {
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex min-h-11 items-center space-x-2 group">
-            <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-400 rotate-45 transform origin-center transition-transform group-hover:rotate-90 duration-500" />
+            <img
+              src="/Vulcan_Transparent.png"
+              alt="Vulcan logo"
+              className="h-8 w-8 shrink-0 object-contain"
+            />
             <span className="text-sm font-semibold tracking-widest uppercase text-zinc-400 group-hover:text-zinc-100 transition-colors">Vulcan</span>
           </Link>
           <h2 className="text-2xl font-bold tracking-tight mt-4 bg-gradient-to-b from-zinc-100 to-zinc-400 bg-clip-text text-transparent">

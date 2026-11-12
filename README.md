@@ -1,13 +1,30 @@
 # Vulcan Organization Tool
 
-Open-source organization software for **FRC / FTC** teams: parts inventory, team membership & roles, and Kanban-style team + personal tasks.
+Open-source shop software for **FTC** teams. Vulcan keeps parts, people, tasks, and the engineering notebook in one place so build-season time goes into the robot.
 
-Hosted for free-tier **Vercel** + **Supabase**. Product constitution lives in [`specs/`](./specs/).
+Built by **FTC team 21180, Error 418**. The team story is on the [documentation page](./src/app/documentation/page.tsx) (`/documentation` when the app is running).
 
-## Stack
+Hosted on the free tiers of **Vercel** and **Supabase**. Product decisions live in [`specs/`](./specs/).
 
-- Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4
-- Supabase Auth + Postgres (RLS)
+## Features
+
+- **Teams and roles.** Create a team, share an invite code, and give members roles such as captain, software, or hardware.
+- **Tasks.** A shared Kanban board for team work, plus a personal list for what is on your plate. Tasks can have assignees, subtasks, due dates, and linked parts.
+- **Parts inventory.** Add listings, search by name or SKU, and move a part through inventory, to be used, used, or removed. The catalog picker searches official goBILDA and REV Robotics parts.
+- **Engineering notebook.** A log stream for the day, a timeline that runs downward through the season, and a compiled page for that date.
+- **Part identification.** Not shipped. The page is a placeholder.
+
+## Tech stack
+
+| Layer | Choice |
+| --- | --- |
+| App | Next.js 16 (App Router), React 19, TypeScript |
+| Styling | Tailwind CSS v4 |
+| Auth and data | Supabase Auth and Postgres, with row-level security |
+| Notebook text | `react-markdown` and `rehype-sanitize` |
+| Hosting | Vercel for the app, Supabase for auth and the database |
+
+There is no ORM. The app talks to Postgres through the Supabase client.
 
 ## Setup
 
@@ -24,7 +41,7 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Curation reads `DEEPSEEK_API_KEY` and `MOONSHOT_API_KEY` from the server environment only. Set whichever providers the team will use in `.env.local`. Do not prefix them with `NEXT_PUBLIC_`.
+Notebook curation reads `DEEPSEEK_API_KEY` and `MOONSHOT_API_KEY` from the server environment only. Set whichever providers the team will use in `.env.local`. Do not prefix them with `NEXT_PUBLIC_`.
 
 3. Apply the database schema in the Supabase SQL Editor, in numeric order. Use the files in [`supabase/migrations/`](./supabase/migrations/) and skip `deprecated/`.
 
@@ -42,26 +59,20 @@ Open [http://localhost:3000](http://localhost:3000).
 ## App routes
 
 | Route | Purpose |
-|-------|---------|
+| --- | --- |
 | `/` | Public homepage |
+| `/documentation` | Team story |
 | `/login` | Sign in / sign up |
 | `/setup-profile` | Name onboarding |
-| `/dashboard` | Live workspace overview |
+| `/dashboard` | Workspace overview |
 | `/team` | Create / join teams, members, invites |
 | `/team-tasks` | Team Kanban board |
-| `/personal-tasks` | Personal + assigned tasks |
+| `/personal-tasks` | Personal and assigned tasks |
 | `/parts` | Team parts inventory |
-| `/notebook` | Engineering notebook: log stream, downward timeline, and compiled day |
+| `/notebook` | Log stream, downward timeline, and compiled day |
 | `/settings` | Profile settings |
 
-## Spec Driven Development
-
-Agents and contributors should read:
-
-- [`specs/mission.md`](./specs/mission.md)
-- [`specs/tech-stack.md`](./specs/tech-stack.md)
-- [`specs/roadmap.md`](./specs/roadmap.md)
-- [`specs/SDD-PROMPT.md`](./specs/SDD-PROMPT.md)
+Signed-in tools redirect to `/login` when there is no session.
 
 ## Scripts
 
@@ -71,3 +82,12 @@ npm run build
 npm run start
 npm run lint
 ```
+
+## Contributing
+
+Read these before changing the product:
+
+- [`specs/mission.md`](./specs/mission.md)
+- [`specs/tech-stack.md`](./specs/tech-stack.md)
+- [`specs/roadmap.md`](./specs/roadmap.md)
+- [`specs/SDD-PROMPT.md`](./specs/SDD-PROMPT.md)

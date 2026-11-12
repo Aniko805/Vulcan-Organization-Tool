@@ -53,7 +53,11 @@ export default function Home() {
         {/* 2. Top Minimal Navigation Bar */}
         <nav className="relative z-10 flex items-center justify-between gap-4 px-4 py-4 md:px-8 md:py-6 border-b border-white/10 backdrop-blur-xl bg-zinc-900/40">
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-400 rotate-45 transform origin-center transition-transform hover:rotate-90 duration-500" />
+            <img
+              src="/Vulcan_Transparent.png"
+              alt="Vulcan logo"
+              className="h-9 w-9 shrink-0 object-contain"
+            />
             <span className="text-lg font-semibold tracking-tight uppercase text-zinc-100">Vulcan</span>
           </div>
           <div className={`flex min-w-0 items-center gap-4 md:gap-6 text-sm text-zinc-400 overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] ${SCROLLBAR}`}>
