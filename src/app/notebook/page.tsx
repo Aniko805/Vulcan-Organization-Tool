@@ -421,6 +421,13 @@ export default function NotebookPage() {
         </FieldInput>
       }
     >
+      <div
+        role="status"
+        className="no-print w-full rounded-2xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-center font-mono text-xs font-semibold uppercase tracking-widest text-amber-200 backdrop-blur-xl"
+      >
+        Coming soon
+      </div>
+
       <ErrorText>{error}</ErrorText>
 
       {!teamId ? (
