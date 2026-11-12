@@ -430,14 +430,13 @@ export default function NotebookPage() {
           </EmptyState>
         </Panel>
       ) : (
-        <div className="space-y-6">
-          {/* Controls: view mode, date, subteam filter */}
-          <Panel className="no-print space-y-4 !p-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-4">
+          {/* Row 1: view mode */}
+          <Panel className="no-print !p-2">
               <div
                 role="tablist"
                 aria-label="View mode"
-                className="flex w-fit gap-1 rounded-2xl border border-white/10 bg-zinc-900/45 p-1"
+                className="flex w-full gap-1"
               >
                 {(
                   [
@@ -452,48 +451,67 @@ export default function NotebookPage() {
                     role="tab"
                     aria-selected={mode === value}
                     onClick={() => setMode(value)}
-                    className={`min-h-11 rounded-xl border px-4 font-mono text-[10px] uppercase tracking-widest transition-all duration-300 ease-out ${
+                    className={`min-h-11 flex-1 rounded-xl border px-2 font-mono text-[10px] uppercase tracking-widest transition-all duration-300 ease-out sm:px-4 sm:text-xs ${
                       mode === value
                         ? "border-emerald-400/40 bg-emerald-500/10 text-zinc-100 ring-1 ring-emerald-400/30"
-                        : "border-transparent text-zinc-500 hover:text-zinc-300"
+                        : "border-transparent text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300"
                     }`}
                   >
                     {label}
                   </button>
                 ))}
               </div>
+          </Panel>
 
-              {mode === "timeline" ? null : (
-              <div className="flex flex-wrap items-center gap-2">
-                <SecondaryButton
-                  type="button"
-                  onClick={() => setDate(shiftISODate(date, -1))}
-                >
-                  Prev
-                </SecondaryButton>
-                <FieldInput
-                  type="date"
-                  aria-label="Notebook date"
-                  className="w-40"
-                  value={date}
-                  onChange={(event) => {
-                    if (event.target.value) setDate(event.target.value);
-                  }}
-                />
-                <SecondaryButton
-                  type="button"
-                  onClick={() => setDate(shiftISODate(date, 1))}
-                >
-                  Next
-                </SecondaryButton>
-                <SecondaryButton type="button" onClick={() => setDate(localDateISO())}>
-                  Today
-                </SecondaryButton>
-              </div>
-              )}
+          {/* Row 2: date navigation, one line */}
+          {mode === "timeline" ? null : (
+          <Panel className="no-print !p-3">
+            <div
+              role="group"
+              aria-label="Date navigation"
+              className="flex items-center gap-2"
+            >
+              <SecondaryButton
+                type="button"
+                aria-label="Previous day"
+                className="shrink-0 px-3"
+                onClick={() => setDate(shiftISODate(date, -1))}
+              >
+                <span aria-hidden="true">‹</span>
+                <span className="hidden sm:inline">Prev</span>
+              </SecondaryButton>
+              <FieldInput
+                type="date"
+                aria-label="Notebook date"
+                className="min-w-0 flex-1 text-center font-mono"
+                value={date}
+                onChange={(event) => {
+                  if (event.target.value) setDate(event.target.value);
+                }}
+              />
+              <SecondaryButton
+                type="button"
+                aria-label="Next day"
+                className="shrink-0 px-3"
+                onClick={() => setDate(shiftISODate(date, 1))}
+              >
+                <span className="hidden sm:inline">Next</span>
+                <span aria-hidden="true">›</span>
+              </SecondaryButton>
+              <SecondaryButton
+                type="button"
+                className="shrink-0 px-3 sm:px-4"
+                onClick={() => setDate(localDateISO())}
+              >
+                Today
+              </SecondaryButton>
             </div>
+          </Panel>
+          )}
 
-            {mode === "timeline" ? null : (
+          {/* Row 3: subteam filter */}
+          {mode === "timeline" ? null : (
+          <Panel className="no-print !p-3">
             <div
               role="group"
               aria-label="Filter by subteam"
@@ -518,8 +536,8 @@ export default function NotebookPage() {
                 );
               })}
             </div>
-            )}
           </Panel>
+          )}
 
           {mode === "timeline" ? (
             <div className="mx-auto w-full max-w-2xl">
