@@ -10,9 +10,8 @@
 export const SCROLLBAR =
   "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:backdrop-blur-md [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20";
 
-/** Page base: zinc-950 with a soft radial glow at the top. */
-export const PAGE_BG =
-  "bg-zinc-950 text-zinc-100 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-zinc-950 to-black";
+/** Page base: flat zinc-950. */
+export const PAGE_BG = "bg-zinc-950 text-zinc-100";
 
 /** Glass surface shared by cards, panels, sheets. Add a radius separately. */
 export const GLASS =
@@ -48,15 +47,14 @@ export const FIELD_LABEL =
 export const CHIP =
   "inline-flex items-center rounded-lg border border-white/10 bg-zinc-800/60 px-2 py-0.5 text-[10px] font-mono text-zinc-400";
 
-/** Horizontal scroll row with soft edge fades, for tab lists and columns. */
-export const H_SCROLL = `overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] ${SCROLLBAR}`;
+/** Horizontal scroll row for tab lists and columns. */
+export const H_SCROLL = `overflow-x-auto ${SCROLLBAR}`;
 
 /**
  * Kanban board row. Below md the columns sit in a horizontal snap-scroll
- * strip with edge fade masks (the 10% side padding keeps the first and last
- * column clear of the fade). From md up it is a normal grid.
+ * strip. From md up it is a normal grid.
  */
-export const KANBAN_ROW = `flex items-start gap-4 overflow-x-auto snap-x snap-mandatory pb-2 max-md:px-[10%] max-md:[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-4 ${SCROLLBAR}`;
+export const KANBAN_ROW = `flex items-start gap-4 overflow-x-auto snap-x snap-mandatory pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-4 ${SCROLLBAR}`;
 
 /** Kanban column surface. Add a min-height per board. */
 export const KANBAN_COL = `${CARD} flex w-[80%] shrink-0 snap-center flex-col space-y-3 p-3 md:w-auto md:shrink`;

@@ -75,10 +75,7 @@ export default function SetupProfilePage() {
   return (
     <div className={`relative min-h-screen ${PAGE_BG} font-sans overflow-hidden flex items-center justify-center px-4 select-none`}>
       {/* Background Architectural Grid Lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2e_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
-
-      {/* Floating Abstract Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2e_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2e_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none" />
 
       {/* Glass Card Wrapper */}
       <div className={`relative z-10 w-full max-w-md ${CARD} p-6 md:p-8`}>
@@ -88,7 +85,7 @@ export default function SetupProfilePage() {
             <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-400 rotate-45 transform origin-center transition-transform group-hover:rotate-90 duration-500" />
             <span className="text-sm font-semibold tracking-widest uppercase text-zinc-400 group-hover:text-zinc-100 transition-colors">Vulcan</span>
           </Link>
-          <h2 className="text-2xl font-bold tracking-tight mt-4 bg-gradient-to-b from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold tracking-tight mt-4 text-zinc-100">
             Complete your profile
           </h2>
           <p className="text-xs text-zinc-400 mt-2">Add your first and last name to finish setup</p>

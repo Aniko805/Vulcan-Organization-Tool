@@ -48,7 +48,7 @@ export default function Home() {
   return (
       <div className={`relative min-h-screen ${PAGE_BG} font-sans overflow-hidden select-none`}>
         {/* 1. Subtle Background Grid Effect */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2e_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2e_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2e_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none" />
 
         {/* 2. Top Minimal Navigation Bar */}
         <nav className="relative z-10 flex items-center justify-between gap-4 px-4 py-4 md:px-8 md:py-6 border-b border-white/10 backdrop-blur-xl bg-zinc-900/40">
@@ -60,7 +60,7 @@ export default function Home() {
             />
             <span className="text-lg font-semibold tracking-tight uppercase text-zinc-100">Vulcan</span>
           </div>
-          <div className={`flex min-w-0 items-center gap-4 md:gap-6 text-sm text-zinc-400 overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] ${SCROLLBAR}`}>
+          <div className={`flex min-w-0 items-center gap-4 md:gap-6 text-sm text-zinc-400 overflow-x-auto ${SCROLLBAR}`}>
             <Link
               href="/documentation"
               className="inline-flex min-h-11 shrink-0 items-center hover:text-zinc-100 transition-colors"
@@ -86,14 +86,12 @@ export default function Home() {
 
         {/* 3. Hero / Main Interactive Section */}
         <main className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-16">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
-
           <div className="inline-flex items-center space-x-2 bg-zinc-900/40 backdrop-blur-xl border border-white/10 px-3 py-1 rounded-full text-xs text-zinc-400 mb-6 hover:bg-zinc-800/50 hover:border-white/20 transition-all duration-300 ease-out">
             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
             <span className="font-mono uppercase tracking-widest">FRC / FTC ready</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter bg-gradient-to-b from-zinc-100 to-zinc-400 bg-clip-text text-transparent mb-6 max-w-3xl leading-none">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-zinc-100 mb-6 max-w-3xl leading-none">
             Vulcan
           </h1>
           

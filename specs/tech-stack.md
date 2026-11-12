@@ -90,14 +90,14 @@ tools/catalog-ingest/        # Offline vendor catalog fetch; not imported by the
 | Token | Guidance |
 |-------|----------|
 | Geometry | Never `rounded-none` / `rounded-sm` / `rounded-md`. Inputs and buttons `rounded-xl`; cards and panels `rounded-2xl`; modals and sheets `rounded-3xl` (`rounded-t-3xl` bottom sheet below `md`) |
-| Page background | `bg-zinc-950 text-zinc-100` plus a top radial glow (`PAGE_BG`) |
+| Page background | Flat `bg-zinc-950 text-zinc-100` (`PAGE_BG`) |
 | Glass surface | `bg-zinc-900/40 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50` (`GLASS`, `CARD`) |
 | Hover / active | `hover:bg-zinc-800/50 hover:border-white/20 transition-all duration-300 ease-out` (`GLASS_HOVER`) |
 | Text | Primary `text-zinc-100`, secondary `text-zinc-400`, labels `text-zinc-500`. No stark white or black |
 | Primary buttons | Gradient `from-emerald-500 to-cyan-500`, `text-zinc-950`, emerald glow shadow (`BTN_PRIMARY`) |
 | Secondary buttons | `bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-200 border border-white/10` (`BTN_SECONDARY`) |
 | Scrollbars | Every scrollable container uses the glass scrollbar string (`SCROLLBAR`) |
-| Mobile | 44px minimum touch targets (`min-h-11`); desktop modals become bottom sheets below `md` (`MODAL_BACKDROP` + `MODAL_SHEET`); horizontal tab lists and Kanban columns scroll with edge fade masks (`H_SCROLL`, `KANBAN_ROW`) |
+| Mobile | 44px minimum touch targets (`min-h-11`); desktop modals become bottom sheets below `md` (`MODAL_BACKDROP` + `MODAL_SHEET`); horizontal tab lists and Kanban columns scroll without edge fades (`H_SCROLL`, `KANBAN_ROW`) |
 | Metadata / status | Micro-scaled, wide-tracked, uppercase monospaced labels |
 | Accent color | Emerald and cyan. Pulsing emerald for live/system status |
 | Avoid | Purple accents, warm cream looks, emoji clutter, sharp corners, stark `#000` / `#fff` surfaces on screen |

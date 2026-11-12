@@ -728,7 +728,7 @@ function PartDrawerContent({
         </button>
       </div>
 
-      <h2 className="break-words bg-gradient-to-b from-zinc-100 to-zinc-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+      <h2 className="break-words text-xl font-bold tracking-tight text-zinc-100">
         {catalog?.name ?? "Unnamed Part"}
       </h2>
 

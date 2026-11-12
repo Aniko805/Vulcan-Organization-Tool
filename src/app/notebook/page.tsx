@@ -73,8 +73,7 @@ const PAPER: Record<Paper, string> = {
   letter: "max-w-[816px] md:min-h-[1056px]",
 };
 
-const HEADING_GRADIENT =
-  "bg-gradient-to-b from-zinc-100 to-zinc-400 bg-clip-text text-transparent";
+const HEADING_GRADIENT = "text-zinc-100";
 const MONO_LABEL = "font-mono uppercase tracking-widest text-zinc-500";
 
 function subteamOf(note: Pick<EngNote, "subteam">) {
