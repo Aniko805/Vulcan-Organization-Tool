@@ -31,7 +31,7 @@ export default function TaskCard({
   onStatusChange: (status: TaskStatus) => void;
   onDelete?: () => void;
 }) {
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(true);
   const dueUrgency = getDueUrgency(task.due_date, task.status);
   const dueClass =
     dueUrgency === "overdue"
@@ -55,12 +55,12 @@ export default function TaskCard({
       aria-expanded={!minimized}
       aria-controls={`task-body-${task.id}`}
       aria-label={minimized ? `Expand ${task.name}` : `Minimize ${task.name}`}
-      className="-m-2 inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-800/60 text-zinc-300 transition-all duration-300 ease-out hover:border-white/20 hover:bg-zinc-700/60 hover:text-zinc-100 active:scale-95"
+      className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-800/60 text-zinc-300 transition-all duration-300 ease-out after:absolute after:-inset-1 after:content-[''] hover:border-white/20 hover:bg-zinc-700/60 hover:text-zinc-100 active:scale-95"
     >
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"
-        className={`h-4 w-4 transition-transform duration-300 ease-out ${
+        className={`h-3.5 w-3.5 transition-transform duration-300 ease-out ${
           minimized ? "" : "rotate-180"
         }`}
         fill="none"
